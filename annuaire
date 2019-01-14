@@ -18,10 +18,269 @@ SUFFIX_ANNUAIRE_FILE="/home/$user/Documents/Annuaires/"
 case $# in
     1)
         while getopts "f" option; do
-        done              
+            case "${option}" in
+                 f)
+                   if [ ! -d  ~/Documents/Annuaires/ ];then
+                        mkdir ~/Documents/Annuaires/
+                        if [ !  -f ~/Documents/Annuaires/.files ]
+                        then
+                            printf "There is no annuaire for the moment but you can create one using the option -c"
+                            exit
+                        else
+                            for currentFile in $(awk '{print $1}' ~/Documents/Annuaires/.files | sort -u)
+                            do
+                                printf "$currentFile \n"
+                            done 
+                            exit                              
+                        fi
+                    else
+                        if [ !  -f  ~/Documents/Annuaires/.files ]
+                        then
+                            printf "There is no annuaire for the moment but you can create one using the option -c"
+                            exit
+                        else
+                            for currentFile in $(awk '{print $1}' ~/Documents/Annuaires/.files | sort -u)
+                            do
+                                printf ":>  $currentFile \n"
+                            done 
+                            exit                              
+                        fi
+                    fi                    
+                ;;      
+            esac
+        done
+        res=$(checkFileExist $1)
+        if [[ $res = 0 ]]
+        then
+            sort -t: -k 1  $SUFFIX_ANNUAIRE_FILE$1
+        else
+            echo the file $1 does not exist
+        fi                
     ;;
     2|3)
-        while getopts "tTMdmg:aes:b:hc:" option; do
+        while getopts "tTMdmg:aes:b:hc:E" option; do
+            case "${option}" in
+                t)
+                    res=$(checkFileExist $2)
+                    if [[ $res = 0 ]]
+                    then
+                        sort -t: -k 5 -k 1  $SUFFIX_ANNUAIRE_FILE$2
+                    else
+                        echo the file $2 does not exist
+                    fi                
+                ;;
+                E)
+                    res=$(checkFileExist $2)
+                    if [[ $res = 0 ]]
+                    then
+                        printf ":> Write the name of the person you wanted to contact :"
+                        read $person
+                        grep -i .*$person.*:  $SUFFIX_ANNUAIRE_FILE$2
+                        res=$?
+                        if [ $res -eq 1 ];then
+                            echo $person does not exist yet
+                        else
+                            if sudo bash -c '[[ -f "/etc/ssmtp/ssmtp.conf" ]]';then
+                                person=$(grep -i .*$nom.*:  $SUFFIX_ANNUAIRE_FILE$2)
+                                sendMailToPerson=()
+                                for per in $person
+                                do
+                                    printf "Do you want to send the message to this person $per (Yy/Nn) :>  "
+                                    read response
+                                    if [[ "$response" = "Y"  ]] || [[ "$response" = "y" ]] ; then                                    
+                                        mail=$(awk -F : "/$/{print $1}" $SUFFIX_ANNUAIRE_FILE$2)
+                                        sendMailToPerson+=("$per")
+                                    else
+                                        continue
+                                    fi
+                                done                                
+                                for caca in "${sendMailToPerson[@]}"
+                                do
+                                    echo $caca
+                                done
+                                
+                            else
+                                printf "ssmtp is not installed or configured"
+                            fi
+                        fi
+                    else
+                        echo the file $2 does not exist
+                    fi                     
+                ;;
+                T)
+                    res=$(checkFileExist $2)
+                    if [[ $res = 0 ]]
+                    then
+                        sort -t: -k 3 -n  $SUFFIX_ANNUAIRE_FILE$2
+                    else
+                        echo the file $2 does not exist
+                    fi
+                ;;
+                M)
+                    res=$(checkFileExist $2)
+                    if [[ $res = 0 ]]
+                    then
+                        awk -F : '{print $1}' $SUFFIX_ANNUAIRE_FILE$2
+                    else
+                        echo the file $2 does not exist
+                    fi
+                ;;
+                d)
+                    res=$(checkFileExist $2)
+                    if [[ $res = 0 ]]
+                    then
+                        tail -n 1 $SUFFIX_ANNUAIRE_FILE$2
+                    else
+                        echo the file $2 does not exist
+                    fi
+                ;;
+                m)
+                    res=$(checkFileExist $2)
+                    if [[ $res = 0 ]]
+                    then
+                        awk -F : '{print $1 "." $2}' $SUFFIX_ANNUAIRE_FILE$2
+                    else
+                        echo the file $2 does not exist
+                    fi
+                ;;
+                g)
+                    res=$(checkFileExist $3)
+                    if [[ $res = 0 ]]
+                    then
+                        nom=${OPTARG}
+                        grep -i .*$nom.*:  $SUFFIX_ANNUAIRE_FILE$3
+                    else
+                        echo the file $3 does not exist
+                    fi
+                ;;
+                a)
+                    res=$(checkFileExist $2)
+                    if [[ $res = 0 ]]
+                    then
+                        saisit="lastename name tel_number building service email"
+                        line=""
+                        for info in $saisit
+                        do
+                            if [[ "$info" = "tel_number" ]]
+                            then
+                                printf "$info : "
+                                read var
+                                if [[ ! $var =~ [0-9]{10} ]]
+                                then
+                                    while [[ ! $var =~ [0-9]{10} ]]
+                                    do
+                                        printf "This is not a tel number \n"
+                                        printf "$info : "
+                                        read var
+                                        if [[ $var =~ [0-9]{10} ]]
+                                        then
+                                            line=${line}\:$var
+                                            break
+                                        fi
+                                    done
+                                else
+                                    line=${line}\:$var
+                                    continue
+                                fi
+                                continue
+                            fi
+                            printf "$info : "
+                            read var
+                            line=${line}\:$var
+                        done
+                        k=$SUFFIX_ANNUAIRE_FILE$2
+                        cd "$SUFFIX_ANNUAIRE_FILE"                     
+                        line=${line#":"}
+                        echo $line >> $k
+                        echo Successfuly added 
+                    else
+                        echo the file $2 does not exist
+                    fi
+                ;;
+                e)
+                    res=$(checkFileExist $SUFFIX_ANNUAIRE_FILE$2)
+                    if [[ $res = 0 ]]
+                    then
+                        services=$(awk -F : '\\{print $5}' $SUFFIX_ANNUAIRE_FILE$2)
+                        uniq_services=$(echo "${services[@]}" | sort -u )
+                        for service in $uniq_services
+                        do
+                            grep -i .*$service.*  $SUFFIX_ANNUAIRE_FILE$2 > annuaire_${service}
+                        done
+                    else
+                        echo the file $2 does not exist
+                    fi
+                ;;
+                s)
+                    res=$(checkFileExist $3)
+                    if [[ $res = 0 ]]
+                    then
+                        nom=${OPTARG}
+                        if  grep -q $nom $SUFFIX_ANNUAIRE_FILE$3;then
+                            sed -i "/$nom/d" $SUFFIX_ANNUAIRE_FILE$3
+                            printf "Successfully Deleted \n"
+                        elif [[ $? == 1 ]] || [[ $? == 2 ]]
+                        then                            
+                            printf "There is no '$nom' in the file $SUFFIX_ANNUAIRE_FILE$3 \n"
+                        fi                        
+                    else
+                        echo the file $3 does not exist
+                    fi
+                ;;
+                b)
+                    res=$(checkFileExist $3)
+                    if [[ $res = 0 ]]
+                    then
+                        bat=${OPTARG}
+                        if grep -q :$bat.* $SUFFIX_ANNUAIRE_FILE$3;then
+                           echo $(grep :$bat.* $SUFFIX_ANNUAIRE_FILE$3)
+                        else
+                            printf "there is no building starting with : $bat \n"
+                        fi
+                    else
+                        echo le fichier $3 n\'existe pas
+                    fi
+                ;;
+                c)
+                    fileName=${OPTARG}
+                    if [ ! -d  ~/Documents/Annuaires/ ];then
+                        mkdir ~/Documents/Annuaires/
+                        cd ~/Documents/Annuaires/
+                        touch $fileName
+                        touch .files
+                        echo $fileName >> ~/Documents/Annuaires/.files
+                        if [ $? -ne 0 ];then
+                            printf "cannot create file \n"
+                            exit
+                        else                                                
+                            printf "annuaire file successfully created \n"
+                        fi                        
+                    else
+                        cd ~/Documents/Annuaires/
+                        touch $fileName
+                        echo $fileName >> ~/Documents/Annuaires/.files
+                        printf "annuaire file successfully created \n"
+                    fi 
+                ;;
+                h)
+                    a="
+                    \r Sort by service and by name : annuaire -t  annuaireFile \n
+                    \r Sort by tel number :  annuaire -T  annuaireFile \n
+                    \r Display the registrants name : annuaire -M  annuaireFile \n
+                    \r Display the last registrant :  annuaire -d  annuaireFile \n
+                    \r Display the registrants name using the syntax Lastename.Name : annuaire -m  annuaireFile \n
+                    \r Search a registrant by his name : annuaire -g Dupont annuaireFile OR annuaire -g Du annuaireFile \n
+                    \r Add a registrant : annuaire -a name annuaireFile \n
+                    \r Create a file per service : annuaire -e annuaireFile \n
+                    \r Delete a registrand by his exacte name : annuaire -s name annuaireFile \n
+                    \r Display staff which belong to a building : annuaire -b THE_LETTER_OF_THE_BUILDING name annuaireFile \n
+                    "
+                    printf "$a \n"
+                ;;                         
+                *)
+                    printf "try annuaire -h to get some help \n"
+                ;;
+            esac
         done
     ;;
     *)
