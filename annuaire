@@ -10,3 +10,6 @@ function checkFileExist()
     done  
     exit 1          
 }
+
+user=$(whoami)
+SUFFIX_ANNUAIRE_FILE="/home/$user/Documents/Annuaires/"
