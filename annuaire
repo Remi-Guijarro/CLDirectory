@@ -13,3 +13,18 @@ function checkFileExist()
 
 user=$(whoami)
 SUFFIX_ANNUAIRE_FILE="/home/$user/Documents/Annuaires/"
+
+
+case $# in
+    1)
+        while getopts "f" option; do
+        done              
+    ;;
+    2|3)
+        while getopts "tTMdmg:aes:b:hc:" option; do
+        done
+    ;;
+    *)
+        echo annuaire -option {argument} annuaireFile
+    ;;
+esac
