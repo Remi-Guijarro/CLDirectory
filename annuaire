@@ -1,0 +1,12 @@
+#! /bin/bash
+
+function checkFileExist()
+{
+    for currentFile in $(awk '{print $1}' ~/Documents/Annuaires/.files | sort -u)
+    do
+        if [[ $1 = $currentFile ]];then
+            echo 0
+        fi
+    done  
+    exit 1          
+}
