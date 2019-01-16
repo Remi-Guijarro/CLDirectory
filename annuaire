@@ -73,31 +73,81 @@ case $# in
                     res=$(checkFileExist $2)
                     if [[ $res = 0 ]]
                     then
-                        printf ":> Write the name of the person you wanted to contact :"
-                        read $person
-                        grep -i .*$person.*:  $SUFFIX_ANNUAIRE_FILE$2
+                        printf "Write the name of the person you wanted to contact :> "
+                        read lenom
+                        grep -i .*$lenom.*:  $SUFFIX_ANNUAIRE_FILE$2 > /dev/null 2>&1
                         res=$?
                         if [ $res -eq 1 ];then
-                            echo $person does not exist yet
-                        else
+                            echo $lenom does not exist yet
+                        else                            
                             if sudo bash -c '[[ -f "/etc/ssmtp/ssmtp.conf" ]]';then
-                                person=$(grep -i .*$nom.*:  $SUFFIX_ANNUAIRE_FILE$2)
+                                lespersonnes=$(grep -i .*$lenom.*:  $SUFFIX_ANNUAIRE_FILE$2)
                                 sendMailToPerson=()
-                                for per in $person
+                                printf "what do you want to send ? Simple text message(m/M) file (f/F) :> "
+                                read messageToSend
+                                subject=""
+                                messageBody=""
+                                fileToSend=""
+                                while true 
+                                do 
+                                    if [[ "$messageToSend" = "m" ]] || [[ "$messageToSend" = "M" ]]; then
+                                        printf "Write the subject here :> "
+                                        read subject
+                                        printf "Write the message body here :> "
+                                        read messageBody
+                                        break
+                                    elif [[ "$messageToSend" = "f" ]] || [[ "$messageToSend" = "F" ]]; then
+                                        printf "Write the subject here :> "
+                                        read subject
+                                        printf "Write the message body here :> "
+                                        read messageBody
+                                        printf "Write the path to the file you want to send here :> "
+                                        read fileToSend
+                                        while true
+                                        do
+                                            if sudo bash -c '[[ -f $fileToSend ]]';then
+                                                break
+                                            else 
+                                                printf "this file does not exist"
+                                            fi
+                                            printf "Write the path to the file you want to send here :> "
+                                            read fileToSend
+                                        done  
+                                        break                                      
+                                    else 
+                                        printf "this is not a valid argument use m or M to send a simple text message or f or F to send file"
+                                        continue
+                                    fi      
+                                    read messageToSend
+                                done 
+
+
+                                for per in $lespersonnes
                                 do
                                     printf "Do you want to send the message to this person $per (Yy/Nn) :>  "
                                     read response
                                     if [[ "$response" = "Y"  ]] || [[ "$response" = "y" ]] ; then                                    
-                                        mail=$(awk -F : "/$/{print $1}" $SUFFIX_ANNUAIRE_FILE$2)
-                                        sendMailToPerson+=("$per")
+                                        mail=$(echo $per | awk -F : '{print $6}' )
+                                        echo $mail
+                                        if [[ "$messageToSend" = "m" ]] || [[ "$messageToSend" = "M" ]]; then
+                                             echo $messageBody | mail -s $subject $mail 
+                                            if [ $? -eq 0 ];then
+                                               printf "Mail sent \n"
+                                            else
+                                               printf "Fail to send mail retry later \n"
+                                            fi                                             
+                                        elif [[ "$messageToSend" = "f" ]] || [[ "$messageToSend" = "F" ]]; then
+                                             echo messageBody | mail -s $subject $mail -A $fileToSend
+                                            if [ $? -eq 0 ];then
+                                                printf "Mail sent \n"
+                                            else
+                                               printf "Fail to send mail retry later \n"
+                                            fi                                      
+                                        fi 
                                     else
                                         continue
                                     fi
                                 done                                
-                                for caca in "${sendMailToPerson[@]}"
-                                do
-                                    echo $caca
-                                done
                                 
                             else
                                 printf "ssmtp is not installed or configured"
