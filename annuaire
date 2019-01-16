@@ -153,11 +153,13 @@ case $# in
                                                 cp -v $file ~/Bureau/rarchive
                                             done
                                             cd ~/Bureau/rarchive/
-                                            zip -j rarchive.zip *
-                                            echo caca | mail -s $subject $mail -A rarchive.zip
+                                            printf "what should be the name of the .zip file ? :> "
+                                            read nameOfZipFile
+                                            zip -j $nameOfZipFile.zip *
+                                            echo caca | mail -s $subject $mail -A $nameOfZipFile.zip
                                             if [ $? -eq 0 ];then
                                                 printf "Mail sent \n"
-                                                rm rarchive.zip
+                                                rm $nameOfZipFile.zip
                                                 cd ..
                                                 rm -Rf rarchive
                                                 exit
