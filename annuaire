@@ -147,15 +147,20 @@ case $# in
                                                printf "Fail to send mail retry later \n"
                                             fi                                             
                                         elif [[ "$messageToSend" = "f" ]] || [[ "$messageToSend" = "F" ]]; then
+                                            mkdir ~/Bureau/rarchive
                                             for file in "${filesToSend[@]}"
                                             do
                                                 cp -v $file ~/Bureau/rarchive
                                             done
-                                            zip ~/Bureau/rarchive * 
-                                            mail -e -s $subject $mail -A rarchive.zip
+                                            cd ~/Bureau/rarchive/
+                                            zip -j rarchive.zip *
+                                            echo caca | mail -s $subject $mail -A rarchive.zip
                                             if [ $? -eq 0 ];then
                                                 printf "Mail sent \n"
                                                 rm rarchive.zip
+                                                cd ..
+                                                rm -Rf rarchive
+                                                exit
                                             else
                                                printf "Fail to send mail retry later \n"
                                             fi                                      
