@@ -87,7 +87,7 @@ case $# in
                                 read messageToSend
                                 subject=""
                                 messageBody=""
-                                fileToSend=""
+                                filesToSend=()
                                 while true 
                                 do 
                                     if [[ "$messageToSend" = "m" ]] || [[ "$messageToSend" = "M" ]]; then
@@ -99,18 +99,30 @@ case $# in
                                     elif [[ "$messageToSend" = "f" ]] || [[ "$messageToSend" = "F" ]]; then
                                         printf "Write the subject here :> "
                                         read subject
-                                        printf "Write the path to the file you want to send here :> "
-                                        read fileToSend
                                         while true
                                         do
-                                            if sudo bash -c "[[ -f $fileToSend ]]";then
-                                                break
-                                            else 
-                                                printf "this file does not exist"
-                                            fi
                                             printf "Write the path to the file you want to send here :> "
-                                            read fileToSend
-                                        done  
+                                            read fileToSend                                            
+                                            while true
+                                            do
+                                                if sudo bash -c "[[ -f $fileToSend ]]";then
+                                                    filesToSend+=($fileToSend)
+                                                    break
+                                                else 
+                                                    printf "this file does not exist"
+                                                fi
+                                                printf "Write the path to the file you want to send here :> "
+                                                read fileToSend
+                                            done
+                                            printf "Do you want to send an another file ? (yY/nN) :>"
+                                            read anotherFile                                            
+                                            if [[ "$anotherFile" = "n" ]] || [[ "$anotherFile" = "N" ]];then
+                                                break
+                                            else
+                                                continue
+                                            fi
+                                        done
+                                          
                                         break                                      
                                     else 
                                         printf "this is not a valid argument use m or M to send a simple text message or f or F to send file"
@@ -135,9 +147,15 @@ case $# in
                                                printf "Fail to send mail retry later \n"
                                             fi                                             
                                         elif [[ "$messageToSend" = "f" ]] || [[ "$messageToSend" = "F" ]]; then
-                                             mail -s $subject $mail -A $fileToSend
+                                            for file in "${filesToSend[@]}"
+                                            do
+                                                cp -v $file ~/Bureau/rarchive
+                                            done
+                                            zip ~/Bureau/rarchive * 
+                                            mail -e -s $subject $mail -A rarchive.zip
                                             if [ $? -eq 0 ];then
                                                 printf "Mail sent \n"
+                                                rm rarchive.zip
                                             else
                                                printf "Fail to send mail retry later \n"
                                             fi                                      
