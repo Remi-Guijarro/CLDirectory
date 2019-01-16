@@ -99,13 +99,11 @@ case $# in
                                     elif [[ "$messageToSend" = "f" ]] || [[ "$messageToSend" = "F" ]]; then
                                         printf "Write the subject here :> "
                                         read subject
-                                        printf "Write the message body here :> "
-                                        read messageBody
                                         printf "Write the path to the file you want to send here :> "
                                         read fileToSend
                                         while true
                                         do
-                                            if sudo bash -c '[[ -f $fileToSend ]]';then
+                                            if sudo bash -c "[[ -f $fileToSend ]]";then
                                                 break
                                             else 
                                                 printf "this file does not exist"
@@ -130,14 +128,14 @@ case $# in
                                         mail=$(echo $per | awk -F : '{print $6}' )
                                         echo $mail
                                         if [[ "$messageToSend" = "m" ]] || [[ "$messageToSend" = "M" ]]; then
-                                             echo $messageBody | mail -s $subject $mail 
+                                            mail -e -s $subject $mail <<< $messageBody
                                             if [ $? -eq 0 ];then
                                                printf "Mail sent \n"
                                             else
                                                printf "Fail to send mail retry later \n"
                                             fi                                             
                                         elif [[ "$messageToSend" = "f" ]] || [[ "$messageToSend" = "F" ]]; then
-                                             echo messageBody | mail -s $subject $mail -A $fileToSend
+                                             mail -s $subject $mail -A $fileToSend
                                             if [ $? -eq 0 ];then
                                                 printf "Mail sent \n"
                                             else
