@@ -46,16 +46,20 @@ case $# in
                             exit                              
                         fi
                     fi                    
-                ;;      
+                ;;
             esac
         done
-        res=$(checkFileExist $1)
-        if [[ $res = 0 ]]
-        then
-            sort -t: -k 1  $SUFFIX_ANNUAIRE_FILE$1
-        else
-            echo the file $1 does not exist
-        fi                
+        myargument=$1
+        argumentSize=${#myargument}        
+        if [ $argumentSize -gt 3 ];then
+            res=$(checkFileExist $1)
+            if [[ $res = 0 ]]
+            then
+                sort -t: -k  1 $SUFFIX_ANNUAIRE_FILE$1
+            else
+                echo the file $1 does not exist
+            fi   
+        fi        
     ;;
     2|3)
         while getopts "tTMdmg:aes:b:hc:E" option; do
@@ -121,8 +125,7 @@ case $# in
                                             else
                                                 continue
                                             fi
-                                        done
-                                          
+                                        done                                          
                                         break                                      
                                     else 
                                         printf "this is not a valid argument use m or M to send a simple text message or f or F to send file"
@@ -156,7 +159,7 @@ case $# in
                                             printf "what should be the name of the .zip file ? :> "
                                             read nameOfZipFile
                                             zip -j $nameOfZipFile.zip *
-                                            echo caca | mail -s $subject $mail -A $nameOfZipFile.zip
+                                            echo body | mail -s $subject $mail -A $nameOfZipFile.zip
                                             if [ $? -eq 0 ];then
                                                 printf "Mail sent \n"
                                                 rm $nameOfZipFile.zip
@@ -337,6 +340,8 @@ case $# in
                 ;;
                 h)
                     a="
+                    \r Show the available directory : annuaire -f
+                    \r Send email : annuaire -E
                     \r Sort by service and by name : annuaire -t  annuaireFile \n
                     \r Sort by tel number :  annuaire -T  annuaireFile \n
                     \r Display the registrants name : annuaire -M  annuaireFile \n
