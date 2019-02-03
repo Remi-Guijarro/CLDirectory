@@ -1,0 +1,9 @@
+root=__mail_
+mailhub=smtp-mail.outlook.com:587
+#rewriteDomain=gmail.com
+hostname=localhost
+UseTLS=Yes
+UseSTARTTLS=Yes
+AuthUser=__user__
+AuthPass=__pass__
+FromLineOverride=yes

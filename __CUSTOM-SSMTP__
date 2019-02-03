@@ -1,0 +1,9 @@
+root=__mail__
+mailhub=__mailServeur__:__port__
+rewriteDomain=__domain__
+hostname=__hostname__
+UseTLS=__tls__
+UseSTARTTLS=__startTLS__
+AuthUser=__user__
+AuthPass=__pass__
+FromLineOverride=__FromLineOverride__
