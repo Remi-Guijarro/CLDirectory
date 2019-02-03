@@ -3,7 +3,7 @@ localdir=$(pwd)
 function createSSMTPConfig()
 {
     if [[ $1 = "gmail" ]];then
-        echo $(cat $localdir/__GMAIL-SSMTP__ > $localdir/fichierBidon)
+        echo $(cat $localdir/SSMTP_CONFIG/__GMAIL-SSMTP__ > $localdir/fichierBidon)
         config=('mail' 'auth' 'pass')
         for configString in "${config[@]}"
         do
@@ -12,7 +12,7 @@ function createSSMTPConfig()
             sed -i -e "s/__$configString\__/$answerConfig/" $localdir/fichierBidon
         done
     elif [[ $1 = "outlook" ]];then
-        echo $(cat $localdir/__OUTLOOK-SSMTP__ > $localdir/fichierBidon)
+        echo $(cat $localdir/SSMTP_CONFIG/__OUTLOOK-SSMTP__ > $localdir/fichierBidon)
          config=('mail' 'auth' 'pass')
         for configString in "${config[@]}"
         do
@@ -21,7 +21,7 @@ function createSSMTPConfig()
             sed -i -e "s/__$configString\__/$answerConfig/" $localdir/fichierBidon
         done
     elif [[ $1 = "custom" ]];then
-        echo $(cat $localdir/__CUSTOM-SSMTP__ > $localdir/fichierBidon)
+        echo $(cat $localdir/SSMTP_CONFIG/__CUSTOM-SSMTP__ > $localdir/fichierBidon)
         config=('mail' 'auth' 'pass' 'mailServeur' 'port' 'domain' 'hostname' 'Usetls' 'UsestartTLS' 'FromLineOverride')
         for configString in "${config[@]}"
         do
