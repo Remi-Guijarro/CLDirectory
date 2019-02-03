@@ -13,8 +13,22 @@ function createSSMTPConfig()
         done
     elif [[ $1 = "outlook" ]];then
         echo $(cat $localdir/__OUTLOOK-SSMTP__ > $localdir/fichierBidon)
+         config=('mail' 'auth' 'pass')
+        for configString in "${config[@]}"
+        do
+            printf "your $configString :> "
+            read answerConfig
+            sed -i -e "s/__$configString\__/$answerConfig/" $localdir/fichierBidon
+        done
     elif [[ $1 = "custom" ]];then
         echo $(cat $localdir/__CUSTOM-SSMTP__ > $localdir/fichierBidon)
+        config=('mail' 'auth' 'pass' 'mailServeur' 'port' 'domain' 'hostname' 'Usetls' 'UsestartTLS' 'FromLineOverride')
+        for configString in "${config[@]}"
+        do
+            printf "$configString :> "
+            read answerConfig
+            sed -i -e "s/__$configString\__/$answerConfig/" $localdir/fichierBidon
+        done
     fi  
 }
 
@@ -32,7 +46,7 @@ else
     else
         cd /etc/ssmtp/
         if [[ -f /etc/ssmtp/ssmtp.conf ]];then
-            createSSMTPConfig  gmail
+            createSSMTPConfig  custom
         else
             touch ssmtp.conf
         fi
