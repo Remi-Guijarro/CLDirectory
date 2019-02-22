@@ -32,6 +32,24 @@ function createSSMTPConfig()
     fi  
 }
 
+function conputeConfigChoice()
+{
+    printf "what mail do you want to config (gmail|outlook|custom) :> "
+    read configmail
+    if [[ "$configmail" == "custom" ]];then
+        printf "here"
+        printf "This config suppose you know what you're doing, are you sure to continue ? (yY|nN ) :> "
+        read answer
+        if [[ "$answer" == "Y" ]] || [[ "$answer" == "y" ]]; then
+            echo $configmail > answerFile
+        else
+            conputeConfigChoice
+        fi
+    else
+        echo $configmail > answerFile
+    fi
+}
+
 if [ "$EUID" -ne 0 ];then
     printf "You must be root to run this script :  sudo $basename $0  \n\r"
 else    
@@ -46,9 +64,14 @@ else
     else
         cd /etc/ssmtp/
         if [[ -f /etc/ssmtp/ssmtp.conf ]];then
-            createSSMTPConfig  custom
+            conputeConfigChoice
+            configmail=$(tail -1 answerFile)
+            createSSMTPConfig $configmail
         else
             touch ssmtp.conf
+            conputeConfigChoice
+            configmail=$(tail -1 answerFile)
+            createSSMTPConfig $configmail
         fi
     fi
 fi
